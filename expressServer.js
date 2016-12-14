@@ -27,6 +27,26 @@ app.get('/pets', (req, res) => {
   });
 });
 
+app.get('/pets/:id', (req, res) => {
+  fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
+    if (err) {
+      console.error(err.stack);
+
+      return res.sendStatus(500);
+    }
+
+    const pets = JSON.parse(petsJSON);
+    const index = Number.parseInt(req.params.id);
+
+    if (index < 0 || index >= pets.length || Number.isNaN(index)) {
+      return res.sendStatus(404);
+    }
+
+    res.set('Content-Type', 'text/plain');
+    res.send(pets[index]);
+  });
+});
+
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
