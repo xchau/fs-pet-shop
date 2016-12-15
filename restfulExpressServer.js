@@ -79,6 +79,7 @@ app.post('/pets', (req, res, next) => {
 });
 
 app.patch('/pets/:id', (req, res, next) => {
+  // eslint-disable-next-line max-statements
   fs.readFile(petsJSONPath, 'utf8', (readErr, petsJSON) => {
     if (readErr) {
       next(readErr);
@@ -91,12 +92,55 @@ app.patch('/pets/:id', (req, res, next) => {
       return res.sendStatus(404);
     }
 
-    const age = Number.parseInt(req.body.age);
-    const { name, kind } = req.body;
-    const pet = { name, kind, age };
+    let age = Number.parseInt(req.body.age);
+    let name = req.body.name;
+    let kind = req.body.kind;
+    let pet = {};
 
-    if (Number.isNaN(age) || !name || !kind) {
+    if (Number.isNaN(age) && !name && !kind) {
       return res.sendStatus(400);
+    }
+
+    // Only name
+    else if (name && !kind && Number.isNaN(age)) {
+      age = pets[index].age;
+      kind = pets[index].kind;
+      pet = { name, kind, age };
+    }
+
+    // Only name & kind
+    else if (name && kind && Number.isNaN(age)) {
+      age = pets[index].age;
+      pet = { name, kind, age };
+    }
+
+    // Only kind
+    else if (kind && !name && Number.isNaN(age)) {
+      age = pets[index].age;
+      name = pets[index].name;
+    }
+
+    // Only age & kind
+    else if (age && kind && !name) {
+      name = pets[index].name;
+      pet = { name, kind, age };
+    }
+
+    // Only age
+    else if (age && !kind && !name) {
+      name = pets[index].name;
+      kind = pets[index].kind;
+      pet = { name, kind, age };
+    }
+
+    // Only age & name
+    else if (age && name && !kind) {
+      kind = pets[index].kind;
+      pet = { name, kind, age };
+    }
+
+    else {
+      pet = { name, kind, age };
     }
 
     pets[index] = pet;
@@ -139,6 +183,10 @@ app.delete('/pets/:id', (req, res, next) => {
       res.send(pet);
     });
   });
+});
+
+app.get('/boom', (_req, _res, next) => {
+  next(new Error('BOOM!'));
 });
 
 // eslint-disable-next-line max-params
