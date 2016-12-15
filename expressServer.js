@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.get('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
-      next(err);
+      return next(err);
     }
 
     const pets = JSON.parse(petsJSON);
