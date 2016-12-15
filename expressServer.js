@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 app.get('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
-      return next(err);
+      return next(err); // looks for middleware w/ 4 errors
     }
 
     const pets = JSON.parse(petsJSON);
@@ -32,19 +32,20 @@ app.get('/pets', (req, res, next) => {
 app.post('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (readErr, petsJSON) => {
     if (readErr) {
-      next(readErr);
+      return next(readErr);
     }
 
     const pets = JSON.parse(petsJSON);
-    const name = req.body.name;
-    const kind = req.body.kind;
     const age = Number.parseInt(req.body.age);
+    const { kind, name } = req.body; // object destructuring
+    // const name = req.body.name;
+    // const kind = req.body.kind;
 
-    if (Number.isNaN(age) || !age || !kind || !name) {
+    if (Number.isNaN(age) || !kind || !name) {
       return res.sendStatus(400);
     }
 
-    const pet = { name, kind, age };
+    const pet = { name, kind, age }; // object literal shorthand (≈structuring)
 
     pets.push(pet);
 
@@ -52,7 +53,7 @@ app.post('/pets', (req, res, next) => {
 
     fs.writeFile(petsJSONPath, newPetsJSON, (writeErr) => {
       if (writeErr) {
-        next(writeErr);
+        return next(writeErr);
       }
 
       res.set('Content-Type', 'application/json');
@@ -64,7 +65,7 @@ app.post('/pets', (req, res, next) => {
 app.get('/pets/:id', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
-      next(err);
+      return next(err);
     }
 
     const pets = JSON.parse(petsJSON);
@@ -74,25 +75,31 @@ app.get('/pets/:id', (req, res, next) => {
       return res.sendStatus(404);
     }
 
-    res.set('Content-Type', 'application/json');
+    res.set('Content-Type', 'application/json'); // unnecessary - returning obj
     res.send(pets[index]);
   });
+});
+
+// creating custom error
+app.get('/boom', (_req, _res, next) => {
+  next(new Error('BOOM!')); // sets error.message
 });
 
 app.use((req, res) => {
   res.sendStatus(404);
 });
 
-app.use((err, req, res, next) => {
+// eslint-disable-next-line max-params
+app.use((err, _req, res, _next) => {
   console.error(err.stack);
 
-  return res.sendStatus(500);
+  res.sendStatus(500);
 });
 
 const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
-  console.log(`Listening to port ${port}`);
+  console.log(`Listening to port ${port}`); // blocking I/O (SLOW!)
 });
 
 module.exports = app;
