@@ -13,12 +13,10 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
 
-app.get('/pets', (req, res) => {
+app.get('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
-      console.error(err.stack);
-
-      return res.sendStatus(500);
+      next(err);
     }
 
     const pets = JSON.parse(petsJSON);
@@ -27,12 +25,10 @@ app.get('/pets', (req, res) => {
   });
 });
 
-app.post('/pets', (req, res) => {
+app.post('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (readErr, petsJSON) => {
     if (readErr) {
-      console.error(readErr.stack);
-
-      return res.sendStatus(500);
+      next(readErr);
     }
 
     const pets = JSON.parse(petsJSON);
@@ -52,9 +48,7 @@ app.post('/pets', (req, res) => {
 
     fs.writeFile(petsJSONPath, newPetsJSON, (writeErr) => {
       if (writeErr) {
-        console.error(writeErr.stack);
-
-        return res.sendStatus(500);
+        next(writeErr);
       }
 
       res.set('Content-Type', 'application/json');
@@ -63,12 +57,10 @@ app.post('/pets', (req, res) => {
   });
 });
 
-app.get('/pets/:id', (req, res) => {
+app.get('/pets/:id', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
-      console.error(err.stack);
-
-      return res.sendStatus(500);
+      next(err);
     }
 
     const pets = JSON.parse(petsJSON);
@@ -85,6 +77,12 @@ app.get('/pets/:id', (req, res) => {
 
 app.use((req, res) => {
   res.sendStatus(404);
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  return res.sendStatus(500);
 });
 
 const port = process.env.PORT || 8000;
