@@ -9,6 +9,10 @@ const app = express();
 
 app.disable('x-powered-by');
 
+const morgan = require('morgan');
+
+app.use(morgan('short'));
+
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
