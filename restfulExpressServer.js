@@ -17,6 +17,12 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
 
+// Basic authorization
+const basicAuth = require('basic-auth');
+
+
+// app.use(basicAuth('admin', 'meowmix'));
+
 app.get('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
@@ -33,6 +39,19 @@ app.get('/pets/:id', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
       return next(err);
+    }
+
+    // const user = basicAuth.parse(req.getHeader('Proxy-Authorization'));
+    const credentials = basicAuth(req);
+
+    // eslint-disable-next-line max-len
+    if (!credentials || credentials.name !== 'john' || credentials.pass !== 'secret') {
+      res.statusCode = 401;
+      res.setHeader('WWW-Authenticate', 'Basic realm="example"');
+      res.end('Access denied');
+    }
+    else {
+      res.end('Access granted');
     }
 
     const pets = JSON.parse(petsJSON);
