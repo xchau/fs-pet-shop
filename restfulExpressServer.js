@@ -20,8 +20,17 @@ app.use(bodyParser.json());
 // Basic authorization
 const basicAuth = require('basic-auth');
 
+app.use((req, res, next) => {
+  const credentials = basicAuth(req);
 
-// app.use(basicAuth('admin', 'meowmix'));
+  // eslint-disable-next-line max-len
+  if (credentials && credentials.name === 'admin' && credentials.pass === 'meowmix') {
+    return next();
+  }
+
+  res.set('WWW-Authenticate', 'Basic realm="Required"');
+  res.sendStatus(401);
+});
 
 app.get('/pets', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
@@ -39,19 +48,6 @@ app.get('/pets/:id', (req, res, next) => {
   fs.readFile(petsJSONPath, 'utf8', (err, petsJSON) => {
     if (err) {
       return next(err);
-    }
-
-    // const user = basicAuth.parse(req.getHeader('Proxy-Authorization'));
-    const credentials = basicAuth(req);
-
-    // eslint-disable-next-line max-len
-    if (!credentials || credentials.name !== 'john' || credentials.pass !== 'secret') {
-      res.statusCode = 401;
-      res.setHeader('WWW-Authenticate', 'Basic realm="example"');
-      res.end('Access denied');
-    }
-    else {
-      res.end('Access granted');
     }
 
     const pets = JSON.parse(petsJSON);
@@ -208,15 +204,15 @@ app.get('/boom', (_req, _res, next) => {
   next(new Error('BOOM!'));
 });
 
+app.use((req, res) => {
+  res.sendStatus(404);
+});
+
 // eslint-disable-next-line max-params
 app.use((err, req, res, _next) => {
   console.error(err.stack);
 
   res.sendStatus(500);
-});
-
-app.use((req, res) => {
-  res.sendStatus(404);
 });
 
 const port = process.env.PORT || 8000;
