@@ -5,6 +5,8 @@ const path = require('path');
 const petsJSONPath = path.join(__dirname, '../pets.json');
 
 const express = require('express');
+
+// eslint-disable-next-line new-cap
 const router = express.Router();
 
 router.get('/pets', (req, res, next) => {
@@ -62,52 +64,9 @@ router.post('/pets', (req, res, next) => {
         return next(writeErr);
       }
 
-      res.send(pets);
+      res.send(pet);
     });
   });
 });
 
-router.patch('/pets/:id', (req, res, next) => {
-  // eslint-disable-next-line max-statements
-  fs.readFile(petsJSONPath, 'utf8', (readErr, petsJSON) => {
-    if (readErr) {
-      return next(readErr);
-    }
-
-    const pets = JSON.parse(petsJSON);
-    const index = req.params.id;
-
-    if (index < 0 || index >= pets.length || Number.isNaN(index)) {
-      return res.sendStatus(400);
-    }
-
-    const age = Number.parseInt(req.body.age);
-    const { name, kind } = req.body;
-
-    if (!Number.isNaN(age)) {
-      pets[index].age = age;
-    }
-
-    if (kind) {
-      pets[index].kind = kind;
-    }
-
-    if (name) {
-      pets[index].name = name;
-    }
-
-    const newPetsJSON = JSON.stringify(pets);
-
-    fs.writeFile(petsJSONPath, newPetsJSON, (writeErr) => {
-      if (writeErr) {
-        return next(writeErr);
-      }
-
-      res.send(pets[index]);
-    });
-  });
-});
-
-router.delete('/pets/:id', (req, res, next) => {
-  
-})
+// router.patch('/')
