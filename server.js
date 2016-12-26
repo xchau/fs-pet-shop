@@ -7,10 +7,11 @@ app.disable('x-powered-by');
 
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-const petRoutes = require('./routes/pets');
 
 app.use(morgan('short'));
 app.use(bodyParser.json());
+
+const petRoutes = require('./routes/pets');
 
 app.use(petRoutes);
 
