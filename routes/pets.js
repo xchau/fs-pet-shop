@@ -108,4 +108,31 @@ router.patch('/pets/:id', (req, res, next) => {
   });
 });
 
+router.delete('/pets/:id', (req, res, next) => {
+  fs.readFile(petsJSONPath, 'utf8', (readErr, petsJSON) => {
+    if (readErr) {
+      return next(readErr);
+    }
+
+    const pets = JSON.parse(petsJSON);
+    const index = Number.parseInt(req.params.id);
+
+    if (index < 0 || index >= pets.length || Number.isNaN(index)) {
+      res.sendStatus(400);
+    }
+
+    const pet = pets.splice(index, 1)[0];
+    const newPetsJSON = JSON.stringify(pets);
+
+    fs.writeFile(petsJSONPath, newPetsJSON, (writeErr) => {
+      if (writeErr) {
+        return next(writeErr);
+      }
+
+      res.set('Content-Type', 'text/plain');
+      res.send(pet);
+    });
+  });
+});
+
 module.exports = router;
